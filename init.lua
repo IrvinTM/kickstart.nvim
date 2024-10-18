@@ -1,4 +1,6 @@
 --[[
+--
+--Marked custom changes with -- custom confi
 
 =====================================================================
 ==================== READ THIS BEFORE CONTINUING ====================
@@ -309,7 +311,17 @@ require('lazy').setup({
   -- Then, because we use the `config` key, the configuration only runs
   -- after the plugin has been loaded:
   --  config = function() ... end
-  --
+  --  custom config
+  --custom markdown added plugin
+  {
+    'iamcco/markdown-preview.nvim',
+    cmd = { 'MarkdownPreviewToggle', 'MarkdownPreview', 'MarkdownPreviewStop' },
+    build = 'cd app && yarn install',
+    init = function()
+      vim.g.mkdp_filetypes = { 'markdown' }
+    end,
+    ft = { 'markdown' },
+  },
   --  Eslint custom added config
   'jose-elias-alvarez/null-ls.nvim',
   config = function()
