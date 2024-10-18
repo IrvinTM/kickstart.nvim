@@ -91,6 +91,7 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 --my custom keymaps
+
 -- map leader v to select all doing ggVG
 vim.keymap.set('n', '<leader>v', 'ggVG', { desc = 'Copy all' })
 -- map leader d to delete line without copying it to clipboard using _ register
@@ -201,7 +202,23 @@ vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left wind
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+-- map F to open diagnostic float with vim.diagnostics.open_float()
+vim.keymap.set('n', '<leader>i', function()
+  -- If we find a floating window, close it.
+  local found_float = false
+  for _, win in ipairs(vim.api.nvim_list_wins()) do
+    if vim.api.nvim_win_get_config(win).relative ~= '' then
+      vim.api.nvim_win_close(win, true)
+      found_float = true
+    end
+  end
 
+  if found_float then
+    return
+  end
+
+  vim.diagnostic.open_float(nil, { focus = false, scope = 'cursor' })
+end, { desc = 'Toggle Diagnostics' })
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
@@ -292,6 +309,32 @@ require('lazy').setup({
   -- Then, because we use the `config` key, the configuration only runs
   -- after the plugin has been loaded:
   --  config = function() ... end
+  --
+  --  Eslint custom added config
+  'jose-elias-alvarez/null-ls.nvim',
+  config = function()
+    local null_ls = require 'null-ls'
+    null_ls.setup {
+      sources = {
+        null_ls.builtins.diagnostics.eslint_d,
+        null_ls.builtins.code_actions.eslint_d,
+        null_ls.builtins.formatting.eslint_d,
+      },
+      -- Automatically format on save
+      on_attach = function(client, bufnr)
+        if client.supports_method 'textDocument/formatting' then
+          vim.api.nvim_clear_autocmds { group = augroup, buffer = bufnr }
+          vim.api.nvim_create_autocmd('BufWritePre', {
+            group = augroup,
+            buffer = bufnr,
+            callback = function()
+              vim.lsp.buf.format { bufnr = bufnr }
+            end,
+          })
+        end
+      end,
+    }
+  end,
 
   { -- Useful plugin to show you pending keybinds.
     'folke/which-key.nvim',
@@ -433,7 +476,6 @@ require('lazy').setup({
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
       vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
-
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
         -- You can pass additional configuration to Telescope to change the theme, layout, etc.
@@ -473,6 +515,7 @@ require('lazy').setup({
     },
   },
   { 'Bilal2453/luvit-meta', lazy = true },
+  { 'mfussenegger/nvim-jdtls' },
   {
     -- Main LSP Configuration
     'neovim/nvim-lspconfig',
@@ -561,6 +604,8 @@ require('lazy').setup({
           --  Most Language Servers support renaming across files, etc.
           map('<leader>rn', vim.lsp.buf.rename, '[R]e[n]ame')
 
+          -- Show error messages from the LSP server with leader e
+
           -- Execute a code action, usually your cursor needs to be on top of an error
           -- or a suggestion from your LSP for this to activate.
           map('<leader>ca', vim.lsp.buf.code_action, '[C]ode [A]ction', { 'n', 'x' })
@@ -626,8 +671,11 @@ require('lazy').setup({
       --  - capabilities (table): Override fields in capabilities. Can be used to disable certain LSP features.
       --  - settings (table): Override the default settings passed when initializing the server.
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
+      --
       local servers = {
         -- clangd = {},
+        --
+        jdtls = {},
         gopls = {},
         -- pyright = {},
         -- rust_analyzer = {},
@@ -858,7 +906,7 @@ require('lazy').setup({
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-storm'
+      vim.cmd.colorscheme 'tokyonight-moon'
 
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
@@ -942,8 +990,8 @@ require('lazy').setup({
   --
   -- require 'kickstart.plugins.debug',
   require 'kickstart.plugins.indent_line',
-  -- require 'kickstart.plugins.lint',
-  -- require 'kickstart.plugins.autopairs',
+  require 'kickstart.plugins.lint',
+  require 'kickstart.plugins.autopairs',
   require 'kickstart.plugins.neo-tree',
   -- require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
 
