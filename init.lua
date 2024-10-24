@@ -100,6 +100,7 @@ vim.keymap.set('n', '<leader>v', 'ggVG', { desc = 'Copy all' })
 vim.keymap.set('n', '<leader>d', '"_dd', { desc = 'Delete line without copying' })
 -- map leader e to go to the end of the line using $
 vim.keymap.set('n', '<leader>e', '$', { desc = 'Go to end of line' })
+vim.keymap.set('n', '<leader>a', ':%s/\\<<C-r><C-w>\\>//g<left><left>', { desc = 'Replace all' })
 -- map leader enter to open and close the terminal
 
 -- Set to true if you have a Nerd Font installed and selected in the terminal
@@ -175,9 +176,6 @@ vim.opt.scrolloff = 10
 -- Clear highlights on search when pressing <Esc> in normal mode
 --  See `:help hlsearch`
 vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
-
--- leader q to execute  :q
-vim.keymap.set('n', '<leader>q', '<cmd>q<CR>')
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
