@@ -93,8 +93,52 @@ vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
 --my custom keymaps
+vim.keymap.set('n', '<leader><Tab>', '<C-6>', { noremap = true, silent = true }) -- map leader v to select all doing ggVG
 
--- map leader v to select all doing ggVG
+-- Set up indentation for Java files
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = 'java',
+  callback = function()
+    vim.opt_local.tabstop = 4 -- Number of spaces a tab counts for
+    vim.opt_local.shiftwidth = 4 -- Number of spaces to use for autoindent
+    vim.opt_local.expandtab = true -- Use spaces instead of tabs
+    vim.opt_local.autoindent = true -- Copy indent from current line when starting a new line
+  end,
+})
+-- _____________________________________
+-- Variable to store the terminal buffer ID
+local term_buf = nil
+-- Variable to store the terminal window ID
+local term_win = nil
+
+-- Function to toggle the terminal
+local function toggle_terminal()
+  if term_win and vim.api.nvim_win_is_valid(term_win) then
+    -- If the terminal window is open, close it (minimize)
+    vim.api.nvim_win_close(term_win, true)
+    term_win = nil
+  else
+    -- If the terminal window is closed, open it (restore)
+    if not term_buf or not vim.api.nvim_buf_is_valid(term_buf) then
+      -- Create a new terminal buffer if it doesn't exist
+      vim.cmd 'split' -- Open a horizontal split
+      vim.cmd 'terminal' -- Open a terminal in the split
+      term_buf = vim.api.nvim_get_current_buf() -- Save the terminal buffer ID
+      term_win = vim.api.nvim_get_current_win() -- Save the terminal window ID
+    else
+      -- Reuse the existing terminal buffer
+      vim.cmd 'split' -- Open a horizontal split
+      vim.api.nvim_set_current_buf(term_buf) -- Set the terminal buffer in the new window
+      term_win = vim.api.nvim_get_current_win() -- Save the terminal window ID
+    end
+    -- Enter terminal mode automatically
+    vim.cmd 'startinsert'
+  end
+end
+
+-- Map <leader><Enter> to toggle the terminal
+vim.keymap.set('n', '<leader><CR>', toggle_terminal, { noremap = true, silent = true })
+-- ______________________________________
 vim.keymap.set('n', '<leader>v', 'ggVG', { desc = 'Copy all' })
 -- map leader d to delete line without copying it to clipboard using _ register
 vim.keymap.set('n', '<leader>d', '"_dd', { desc = 'Delete line without copying' })
@@ -259,7 +303,7 @@ vim.opt.rtp:prepend(lazypath)
 require('lazy').setup({
   -- NOTE: Plugins can be added with a link (or for a github repo: 'owner/repo' link).
   'tpope/vim-sleuth',
-  --'github/copilot.vim',
+  'github/copilot.vim',
   {
     'okuuva/auto-save.nvim',
     version = '^1.0.0', -- see https://devhints.io/semver, alternatively use '*' to use the latest tagged release
@@ -921,6 +965,13 @@ require('lazy').setup({
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
     'folke/tokyonight.nvim',
+    opts = {
+      transparent = true,
+      styles = {
+        sidebars = 'transparent',
+        floats = 'transparent',
+      },
+    },
     priority = 1000, -- Make sure to load this before all the other start plugins.
     init = function()
       -- Load the colorscheme here.
@@ -987,9 +1038,9 @@ require('lazy').setup({
         -- Some languages depend on vim's regex highlighting system (such as Ruby) for indent rules.
         --  If you are experiencing weird indenting issues, add the language to
         --  the list of additional_vim_regex_highlighting and disabled languages for indent.
-        additional_vim_regex_highlighting = { 'ruby' },
+        additional_vim_regex_highlighting = { 'ruby', 'java' },
       },
-      indent = { enable = true, disable = { 'ruby' } },
+      indent = { enable = true, disable = { 'ruby', 'java' } },
     },
     -- There are additional nvim-treesitter modules that you can use to interact
     -- with nvim-treesitter. You should go explore a few and see what interests you:
