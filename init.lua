@@ -4,13 +4,14 @@
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
+vim.opt_local.tabstop = 4 -- Number of spaces a tab counts for
+
 --my custom keymaps
 
 -- Set up indentation for Java files not working will check later
 --[[ vim.api.nvim_create_autocmd('FileType', {
   pattern = 'java',
   callback = function()
-    vim.opt_local.tabstop = 4 -- Number of spaces a tab counts for
     vim.opt_local.shiftwidth = 4 -- Number of spaces to use for autoindent
     vim.opt_local.expandtab = true -- Use spaces instead of tabs
     vim.opt_local.autoindent = true -- Copy indent from current line when starting a new line
